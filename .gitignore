@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+.data/diamonds_example_gaussian.RData
+data/diamonds_example_gaussian.RData
