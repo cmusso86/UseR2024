@@ -9,7 +9,7 @@ author:
 title-slide-attributes:
     data-background-image: imgs/recalibratiNN.png
     data-background-size: 25%
-    data-background-position: 75% 75%
+    data-background-position: 70% 80%
 bibliography: biblio/referencias.bib
 csl: biblio/abnt.csl
 format:
@@ -614,7 +614,7 @@ gg_PIT_local(pit_local)+
 
 ## Coverage
 <div style="text-align: center;">
-```{r echo = F, out.extra="95%"}
+```{r echo = F, out.width="110%"}
 coverage_model <- tibble(
   x1cal = x_test[,1], 
   x2cal = x_test[,2],
@@ -670,7 +670,7 @@ y_hat_rec <- recalibrated$y_samples_calibrated_wt
 
 <div style="text-align: center;">
 
-```{r echo = F, out.extra= "110"}
+```{r echo = F, out.width= "110%"}
 
 n_clusters <- 6 
 n_neighbours <- length(y_hat_test)*0.08
@@ -740,7 +740,7 @@ as.data.frame(t(pits)) |>
 ## Coverage
 
 <div style="text-align: center;">
-```{r echo = F, out.extra= "110"}
+```{r echo = F, out.width= "110%"}
 rm(list = ls())
 file_path1 <- system.file("extdata", "mse_cal.rds", package = "recalibratiNN")
 MSE_cal <- readRDS(file_path1)|> as.numeric()
