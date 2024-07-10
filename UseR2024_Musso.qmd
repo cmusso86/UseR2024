@@ -76,7 +76,7 @@ $$
 
 ## Observing miscalibration
 
-A simple linear regression, just to warm up. 
+A simple linear regression, just to warm us up. 
 
 . . . 
 
@@ -190,7 +190,7 @@ y_new <- rnorm(length(x_new),mu(x_new), sigma_v(x_new))
 y_hat_new <- predict(model, data.frame(x_train=x_new))
 ```
 <div style="text-align: center;">
-```{r, echo=F,  fig.align='center', out.extra = "110%" }
+```{r, echo=F,   out.width = "75%" }
 
 # use predict to get the confidence intervals
 data_predict <- predict(model, 
@@ -418,7 +418,7 @@ ajuste_modelo + p_value_local
 
 **Method:**
 
-  -   Torres et al (2024): Calibration across various representations of the covariate space: useful for Artificial Neural Networks (ANNs).
+  -   [Torres et al (2024)](https://doi.org/10.48550/arXiv.2403.05756): Local calibration for regressions and across various representations of the covariate space: useful for Artificial Neural Networks (ANNs).
 
 
 
@@ -432,7 +432,9 @@ ajuste_modelo + p_value_local
 
 - and on [CRAN](https://doi.org/10.32614/CRAN.package.recalibratiNN)
 
-## recalibratiNN package
+- for now, it is only available for gaussian regression models.
+
+## The recalibratiNN package
 
 - 7 functions & 10 dependencies
 
@@ -456,79 +458,7 @@ gt(p_tab) |>
 
 
 # Visualizing miscalibration
-
-## Global Calibration
-
-
-```{r eval=FALSE}
-
-pit <- PIT_global(ycal = y_cal, # true values from calib. set.
-                  yhat = y_hat_cal, # predictions for calb. set. 
-                  mse  = MSE_cal) # MSE from calibration set. 
-
-gg_PIT_global(pit,
-               type = "histogram",
-              fill = "steelblue4",
-              alpha = 0.8,
-              print_p = TRUE
-            )
-```
-
-
-. . . 
-
-<div style="text-align: center;">
-```{r , echo = FALSE,  out.width= "75%"}
-pit <- PIT_global(ycal = y_cal, # true values from calib. set.
-                  yhat = y_hat_cal, # predictions for calb. set. 
-                  mse  = MSE_cal) # MSE from calibration set. 
-
-
-gg_PIT_global(pit,
-               type = "histogram",
-              fill = "steelblue4",
-              alpha = 0.8,
-              print_p = TRUE
-            )+
-  theme_classic(base_size = 26)
-```
-</div>
-
-
-## Local Calibration
-
-```{r eval = FALSE}
-pit_local <- PIT_local(xcal = x_cal, 
-                       ycal = y_cal, 
-                       yhat = y_hat_cal, 
-                       mse = MSE_cal,
-                       clusters = 6,
-                       p_neighbours = 0.2,
-                       PIT = PIT_global)
-
-gg_PIT_local(pit_local)
-```
-
-. . . 
-
-
-<div style="text-align: center;">
-```{r,  echo = FALSE, out.width= "85%"}
-pit_local <- PIT_local(xcal = x_cal, 
-                       ycal = y_cal, 
-                       yhat = y_hat_cal, 
-                       mse = MSE_cal,
-                       clusters = 6,
-                       p_neighbours = 0.2,
-                       PIT = PIT_global)
-
-gg_PIT_local(pit_local)+
-  theme_classic(base_size = 26)
-```
-</div>
-
-# Neural Networks
-
+- With a Neural Network example
 
 ## 
 
@@ -565,7 +495,9 @@ y_test  <- y[(split2*n+1):n]
 
 
 
-## Keras
+## 
+
+**Keras**
 ```{r, eval=F}
 model_nn <- keras_model_sequential()
 
@@ -628,10 +560,47 @@ y_hat_test <- readRDS(file_path3)|> as.numeric()
 
 ```
 
-## Observing miscalibration
+## Global miscalibration
+
+```{r echo = T, eval = F}
+
+pit <- PIT_global(ycal = y_cal, # outcomes of calibration set
+                  yhat = y_hat_cal, # predictions of calibration
+                  mse = MSE_cal) # MSE of calibration set 
+                       
+gg_PIT_global(pit,
+              type = "histogram") # other customizations are available
+```
+
+. . . 
 
 <div style="text-align: center;">
-```{r echo = F, out.extra="110%"}
+```{r echo = F, out.width="70%"}
+library(recalibratiNN)
+pit <- PIT_global(ycal = y_cal, # outcomes of calibration set
+                  yhat = y_hat_cal, # predictions of calibration
+                  mse = MSE_cal) # MSE of calibration set 
+
+gg_PIT_global(pit,
+              type = "histogram") +
+  theme_classic(base_size = 26)
+```
+</div>
+
+## Local miscalibration
+```{r echo = T, eval = F}
+pit_local <- PIT_local(xcal = x_cal, # covariates of calibration set
+                       ycal = y_cal, # outcomes of calibration set
+                       yhat = y_hat_cal, # predictions of calibration set
+                       mse = MSE_cal) # MSE of calibration set
+
+gg_PIT_local(pit_local) # there are customizations available
+```
+
+. . . 
+
+<div style="text-align: center;">
+```{r echo = F, out.width="70%"}
 pit_local <- PIT_local(xcal = x_cal,
                        ycal = y_cal, 
                        yhat = y_hat_cal, 
@@ -645,7 +614,7 @@ gg_PIT_local(pit_local)+
 
 ## Coverage
 <div style="text-align: center;">
-```{r echo = F, out.extra="110%"}
+```{r echo = F, out.extra="95%"}
 coverage_model <- tibble(
   x1cal = x_test[,1], 
   x2cal = x_test[,2],
@@ -675,23 +644,21 @@ coverage_model |>
 ```
 </div>
 
-# Recalibration
+## Recalibration
 
 ```{r}
 recalibrated <- 
   recalibrate(
-     pit_values = pit,      # global pit values calculated earlier.
+    pit_values = pit,      # global pit values calculated earlier.
     mse = MSE_cal,         # MSE from calibration set
     yhat_new = y_hat_test, # predictions of test set
-    space_cal = x_cal,     # covariates of calibration set
-    space_new = x_test,    # covariates of test set
-   
-
-   
+    space_cal = x_cal,     # covariates or any representation of calibration set
+    space_new = x_test,    # covariates or any representation of test set
     type = "local",        # type of calibration
     p_neighbours = 0.08)   # proportion of calibration to use as nearest neighbors
 
 y_hat_rec <- recalibrated$y_samples_calibrated_wt
+
 ```
 
 - That is it! 
@@ -848,7 +815,7 @@ y_hat_rec <- recalibrated$y_samples_calibrated_wt
   scale_color_manual("Confidence Interval",
                      values = c("in" = "aquamarine3", 
                                 "out" = "steelblue4"))+
-  theme_classic(base_size = 34)
+  theme_classic(base_size = 24)
 ```
 </div>
 
@@ -964,7 +931,7 @@ diamGlob + diamLoc
 ## Conclusions and Future Work
 
 - Effective Visualization of Miscalibration.
-- Advantages related to other packages
+- Advantages in relation to other available packages
    - Focused in regression models
    - Local recalibration
    - Recalibration at intermediate layers.
@@ -973,7 +940,7 @@ diamGlob + diamLoc
 
 **Future Developments:**
 
-- Integration with other packages, broader input types, cross-validation methods
+- Integration with other packages (tidymodels), broader input types, cross-validation methods
 
 - Handle models with arbitrary predictive distributions.
 
